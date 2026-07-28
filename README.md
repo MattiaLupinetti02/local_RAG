@@ -36,7 +36,7 @@ graph TD
         I -->|Risposta| F
     end
 ```
-```mermid
+```mermaid
 sequenceDiagram
     participant Utente
     participant Streamlit
