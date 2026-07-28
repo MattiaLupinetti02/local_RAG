@@ -13,6 +13,19 @@ Questo progetto implementa un assistente intelligente per la ricerca e il recupe
 
 ## Architettura del sistema
 
+### Struttura dei file
+.
+├── agente_ai.py         Interfaccia Streamlit
+├── build_index.py       Creazione indice FAISS
+├── email_utils.py       Helper per lettura e ricerca email
+├── generate_emails.py   Generazione sintetica email (OpenAI)
+├── llm.py               nterfaccia per Ollama (Llama 3.2)
+├── rag_system.py        Sistema RAG (embedding + ricerca)
+├── data/                Cartella contenente i file JSON delle email
+├── faiss/               Cartella contenente indice e metadati
+├── .env                 Variabili d'ambiente (non committato)
+└── requirements.txt     Dipendenze Python
+
 ```mermaid
 graph TD
     subgraph "Generazione dati"
@@ -55,4 +68,24 @@ sequenceDiagram
     Ollama-->>Streamlit: Risposta generata
     Streamlit-->>Utente: Mostra risposta + email di supporto
 ```
+
+## Installazione e avvio
+### Required: docker
+- Clona il repository
+```
+git clone https://github.com/MattiaLupinetti02/local_RAG.git
+cd local_RAG
+```
+- crea le immagini necessarie prima di eseguire i container
+  ```
+  docker compose build
+  ```
+- esegui i container
+  ```
+  docker compose up
+  ```
+## quickstart
+Per accedere all'interfaccia *streamlit* è necessario accedere alla porta 8501 (modificabile nel *docker-compose.yml*) con `https://localhost:8501
+
+
 
