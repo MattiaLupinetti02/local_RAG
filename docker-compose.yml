@@ -1,0 +1,83 @@
+version: "3.9"
+
+services:
+
+  ollama:
+    build:
+      context: ./ollama
+      dockerfile: Dockerfile
+
+    container_name: ollama
+
+    restart: unless-stopped
+
+    ports:
+      - "11434:11434"
+
+    volumes:
+      - ollama_data:/root/.ollama
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+    networks:
+      - rag-network
+
+
+  streamlit:
+
+    build:
+      context: .
+      dockerfile: streamlit/Dockerfile
+
+    container_name: streamlit-rag
+
+    restart: unless-stopped
+
+    depends_on:
+      ollama:
+        condition: service_healthy
+
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+
+    ports:
+      - "8501:8501"
+
+    volumes:
+      - .:/app
+      - ./faiss:/app/faiss
+
+    working_dir: /app
+
+    command: >
+      sh -c "
+      if [ ! -f faiss/emails.index ]; then
+        echo 'Indice FAISS non trovato, lo creo...';
+        until python build_index.py; do
+          echo 'Ollama non pronto o modello mancante, riprovo tra 20s...';
+          sleep 20;
+        done;
+      else
+        echo 'Indice FAISS già presente, salto la creazione.';
+      fi &&
+      streamlit run agente_ai.py --server.address=0.0.0.0 --server.port=8501
+      "
+
+    networks:
+      - rag-network
+    stdin_open: true
+    tty: true
+
+
+networks:
+  rag-network:
+    driver: bridge
+
+
+volumes:
+
+  ollama_data:
