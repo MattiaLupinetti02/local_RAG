@@ -87,8 +87,8 @@ def search(query,top_k=3):
         if idx == -1:
             continue
 
-        if score < SIMILARITY_THRESHOLD:
-            continue
+        """if score < SIMILARITY_THRESHOLD:
+            continue"""
 
         results.append({
 

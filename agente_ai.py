@@ -9,8 +9,8 @@ from llm import ask_llm
 ##############################################################
 
 st.set_page_config(
-    page_title="Email Assistant",
-    page_icon="📧",
+    page_title="Document Retrieval assistant",
+    page_icon="�",
     layout="wide"
 )
 
@@ -25,11 +25,10 @@ if "messages" not in st.session_state:
 # Titolo
 ##############################################################
 
-st.title("📧 Email Assistant")
+st.title("� Document Retrieval assistant")
 
 st.write(
-    "Ricerca intelligente nelle email mediante RAG locale "
-    "(FAISS + Ollama + Llama 3.2)"
+    "Smart retrieval of your documents"
 )
 
 ##############################################################
@@ -46,7 +45,7 @@ for message in st.session_state.messages:
 ##############################################################
 
 query = st.chat_input(
-    "Scrivi una domanda..."
+    "Ask a question here"
 )
 
 ##############################################################
@@ -73,7 +72,7 @@ if query:
     # Ricerca nel database vettoriale
     ##########################################################
 
-    with st.spinner("Ricerca delle email..."):
+    with st.spinner("Document research..."):
 
         emails = cerca_mail(query)
 
@@ -84,8 +83,7 @@ if query:
     if len(emails) == 0:
 
         answer = (
-            "Non ho trovato email sufficientemente "
-            "attinenti alla richiesta."
+            "No relevant documents found for the request."
         )
 
     else:
@@ -104,18 +102,18 @@ if query:
             context += f"""
                         ========================================
 
-                        Similarità: {score:.3f}
+                        Similarity: {score:.3f}
 
-                        Oggetto:
+                        Subject:
                         {email['subject']}
 
-                        Mittente:
+                        Sender:
                         {email['from']}
 
-                        Data:
+                        Date:
                         {email['date']}
 
-                        Corpo:
+                        Body:
                         {email['body']}
 
                         ========================================
@@ -126,7 +124,7 @@ if query:
         # Chiamata al modello
         ######################################################
 
-        with st.spinner("Generazione risposta..."):
+        with st.spinner("Answering..."):
 
             answer = ask_llm(
                 question=query,
@@ -141,7 +139,7 @@ if query:
 
         st.markdown(answer)
 
-        with st.expander("Email recuperate dal RAG"):
+        with st.expander("Documents retrieved by the RAG"):
 
             for item in emails:
 
@@ -149,13 +147,13 @@ if query:
 
                 st.markdown(
                     f"""
-                        **Similarità:** {item['score']:.3f}
+                        **Similarity:** {item['score']:.3f}
 
-                        **Oggetto:** {email['subject']}
+                        **Subject:** {email['subject']}
 
-                        **Mittente:** {email['from']}
+                        **Sender:** {email['from']}
 
-                        **Data:** {email['date']}
+                        **Date:** {email['date']}
 
                         ---
 
