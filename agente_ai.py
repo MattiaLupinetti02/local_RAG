@@ -1,12 +1,12 @@
 import streamlit as st
 
-from email_utils import cerca_mail
+from email_utils import search_documents
 from llm import ask_llm
 
 
-##############################################################
+####
 # Configurazione pagina
-##############################################################
+####
 
 st.set_page_config(
     page_title="Document Retrieval assistant",
@@ -14,16 +14,16 @@ st.set_page_config(
     layout="wide"
 )
 
-##############################################################
+####
 # Stato della chat
-##############################################################
+####
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-##############################################################
+####
 # Titolo
-##############################################################
+####
 
 st.title("� Document Retrieval assistant")
 
@@ -31,32 +31,32 @@ st.write(
     "Smart retrieval of your documents"
 )
 
-##############################################################
+####
 # Visualizzazione cronologia
-##############################################################
+####
 
 for message in st.session_state.messages:
 
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-##############################################################
+####
 # Input utente
-##############################################################
+####
 
 query = st.chat_input(
     "Ask a question here"
 )
 
-##############################################################
+####
 # Elaborazione
-##############################################################
+####
 
 if query:
 
-    ##########################################################
+    
     # Messaggio utente
-    ##########################################################
+    
 
     st.session_state.messages.append(
         {
@@ -68,19 +68,19 @@ if query:
     with st.chat_message("user"):
         st.markdown(query)
 
-    ##########################################################
+    
     # Ricerca nel database vettoriale
-    ##########################################################
+    
 
     with st.spinner("Document research..."):
 
-        emails = cerca_mail(query)
+        documents = search_documents(query)
 
-    ##########################################################
+    
     # Nessun risultato
-    ##########################################################
+    
 
-    if len(emails) == 0:
+    if len(documents) == 0:
 
         answer = (
             "No relevant documents found for the request."
@@ -88,41 +88,30 @@ if query:
 
     else:
 
-        ######################################################
+        
         # Costruzione del contesto
-        ######################################################
+        
 
         context = ""
 
-        for item in emails:
+        for item in documents:
 
             score = item["score"]
-            email = item["email"]
-
+            doc = item["email"] if "email" in item else item["pdf"]
+        
             context += f"""
                         ========================================
 
                         Similarity: {score:.3f}
 
-                        Subject:
-                        {email['subject']}
-
-                        Sender:
-                        {email['from']}
-
-                        Date:
-                        {email['date']}
-
-                        Body:
-                        {email['body']}
+                        context_document:
+                        {doc}
 
                         ========================================
 
                     """
-
-        ######################################################
         # Chiamata al modello
-        ######################################################
+        
 
         with st.spinner("Answering..."):
 
@@ -131,9 +120,9 @@ if query:
                 context=context
             )
 
-    ##########################################################
+    
     # Visualizzazione risposta
-    ##########################################################
+    
 
     with st.chat_message("assistant"):
 
@@ -141,31 +130,23 @@ if query:
 
         with st.expander("Documents retrieved by the RAG"):
 
-            for item in emails:
+            for item in documents:
 
-                email = item["email"]
-
+                doc = item["email"] if "email" in item.keys() else item["pdf"]
+                
                 st.markdown(
                     f"""
                         **Similarity:** {item['score']:.3f}
 
-                        **Subject:** {email['subject']}
-
-                        **Sender:** {email['from']}
-
-                        **Date:** {email['date']}
-
-                        ---
-
-                        {email['body']}
+                        **Context Document:** {doc}
 
                         ---
                     """
                 )
 
-    ##########################################################
+    
     # Salvataggio cronologia
-    ##########################################################
+    
 
     st.session_state.messages.append(
         {

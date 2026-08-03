@@ -3,20 +3,23 @@ import json
 import faiss
 import numpy as np
 
+from loader.email_loader import load_emails
+from loader.document_loader import load_pdfs
+
+
 from ollama import Client
 
-###############################################################
 # Configurazione
-###############################################################
+
 
 DATA_FOLDER = "data"
 INDEX_FOLDER = "faiss"
 
-INDEX_FILE = os.path.join(INDEX_FOLDER, "emails.index")
+INDEX_FILE = os.path.join(INDEX_FOLDER, "documents.index")
 METADATA_FILE = os.path.join(INDEX_FOLDER, "metadata.json")
 
 EMBEDDING_MODEL = "bge-m3"
-
+print(os.getenv("OLLAMA_HOST","http://localhost:11434"))
 client = Client(
     host=os.getenv(
         "OLLAMA_HOST",
@@ -25,76 +28,38 @@ client = Client(
 )
 
 
-###############################################################
-# Recupera tutte le email
-###############################################################
+
 
 documents = []
-metadata = []
+documents += load_emails(DATA_FOLDER)
+documents += load_pdfs(DATA_FOLDER)
 
-files = sorted(
-    [
-        f for f in os.listdir(DATA_FOLDER)
-        if f.endswith(".json")
-    ]
-)
+texts = [d["text"] for d in documents]
+metadata = [d["metadata"] for d in documents]
 
-print(f"Trovate {len(files)} email.")
-
-for filename in files:
-
-    path = os.path.join(DATA_FOLDER, filename)
-
-    with open(path, encoding="utf-8") as f:
-
-        email = json.load(f)
-
-    text = f"""
-Oggetto:
-{email['subject']}
-
-Mittente:
-{email['from']}
-
-Data:
-{email['date']}
-
-Corpo:
-{email['body']}
-"""
-
-    documents.append(text)
-
-    metadata.append({
-        "file": filename
-    })
+print(documents)
 
 
-###############################################################
+
 # Embedding
-###############################################################
 
 print("Calcolo embedding...")
 
 response = client.embed(
     model=EMBEDDING_MODEL,
-    input=documents
-)
+    input=texts
+                        )
 
 embeddings = np.array(
     response["embeddings"],
     dtype=np.float32
 )
 
-###############################################################
 # Normalizzazione
-###############################################################
 
 faiss.normalize_L2(embeddings)
 
-###############################################################
 # Costruzione indice
-###############################################################
 
 dimension = embeddings.shape[1]
 
@@ -102,9 +67,7 @@ index = faiss.IndexFlatIP(dimension)
 
 index.add(embeddings)
 
-###############################################################
 # Salvataggio
-###############################################################
 
 os.makedirs(INDEX_FOLDER, exist_ok=True)
 

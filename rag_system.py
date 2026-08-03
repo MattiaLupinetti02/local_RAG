@@ -13,7 +13,7 @@ INDEX_FOLDER = "faiss"
 
 INDEX_FILE = os.path.join(
     INDEX_FOLDER,
-    "emails.index"
+    "documents.index"
 )
 
 METADATA_FILE = os.path.join(
@@ -71,7 +71,7 @@ def embed_query(query):
 # Ricerca
 ###########################################################
 
-def search(query,top_k=3):
+def search_embedding_vectors(query,top_k=3):
 
     query_embedding = embed_query(query)
 
@@ -87,8 +87,8 @@ def search(query,top_k=3):
         if idx == -1:
             continue
 
-        """if score < SIMILARITY_THRESHOLD:
-            continue"""
+        if score < SIMILARITY_THRESHOLD:
+            continue
 
         results.append({
 

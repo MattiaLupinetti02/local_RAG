@@ -6,3 +6,4 @@ scikit-learn
 matplotlib
 python-dotenv
 pandas
+unstructured[pdf]
