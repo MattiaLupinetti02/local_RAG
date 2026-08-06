@@ -1,6 +1,6 @@
 import streamlit as st
 
-from email_utils import search_documents
+from email_utils import search_documents,build_context
 from llm import ask_llm
 
 
@@ -75,43 +75,19 @@ if query:
     with st.spinner("Document research..."):
 
         documents = search_documents(query)
-
+        context = build_context(documents)
     
     # Nessun risultato
     
 
-    if len(documents) == 0:
+    if len(context) == 0:
 
         answer = (
             "No relevant documents found for the request."
         )
 
     else:
-
-        
-        # Costruzione del contesto
-        
-
-        context = ""
-
-        for item in documents:
-
-            score = item["score"]
-            doc = item["email"] if "email" in item else item["pdf"]
-        
-            context += f"""
-                        ========================================
-
-                        Similarity: {score:.3f}
-
-                        context_document:
-                        {doc}
-
-                        ========================================
-
-                    """
-        # Chiamata al modello
-        
+        print("Context built, calling LLM...")
 
         with st.spinner("Answering..."):
 
@@ -129,20 +105,7 @@ if query:
         st.markdown(answer)
 
         with st.expander("Documents retrieved by the RAG"):
-
-            for item in documents:
-
-                doc = item["email"] if "email" in item.keys() else item["pdf"]
-                
-                st.markdown(
-                    f"""
-                        **Similarity:** {item['score']:.3f}
-
-                        **Context Document:** {doc}
-
-                        ---
-                    """
-                )
+            context
 
     
     # Salvataggio cronologia

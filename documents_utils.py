@@ -7,6 +7,7 @@ from unstructured.chunking.title import chunk_by_title
 
 
 DATA_FOLDER = "data"
+TOP_K = 3
 
 
 def read_email(filename):
@@ -16,7 +17,6 @@ def read_email(filename):
             os.path.join(DATA_FOLDER, filename),
             encoding="utf-8"
         ) as f:
-
             return json.load(f)
 
 
@@ -57,16 +57,15 @@ def read_pdfs(filename, max_characters=1000, overlap=150, strategy="fast"):
 
     return documents
 
-def search_documents(query):
+def search_documents(query, top_k=TOP_K):
 
     results = search_embedding_vectors(query)
-
     emails = []
     pdfs = []
     for result in results:
-        print(result["file"])
         email = read_email(result["file"])
-
+        if email is None:
+            continue
         emails.append({
 
             "score": result["score"],
@@ -75,17 +74,32 @@ def search_documents(query):
 
         })
     for result in results:
-        print(result["file"])
         pdf = read_pdfs(result["file"])
         for chunk in pdf:
             pdfs.append({
 
                 "score": result["score"],
 
-                "pdf": chunk["metadata"]["file"]+str(chunk["metadata"]["chunk_index"])
+                "pdf": chunk["text"]
 
             })
     document_list = emails + pdfs
-    print(document_list)
-    print("Sorting documents by score...")
+    document_list = sorted(document_list, key=lambda d: d["score"], reverse=True)
+    print(document_list[0:top_k])
+    document_list = document_list[0:top_k]
     return document_list
+
+def build_context(documents):
+    context = ""
+    c = ""
+    for item in documents:
+        c += """========================================"""
+
+        for key in item.keys():
+
+            c += f"\n{key.upper()}:{item[key]}\n" 
+
+        context += c + "\n\n"
+
+    return context
+

@@ -37,7 +37,6 @@ documents += load_pdfs(DATA_FOLDER)
 texts = [d["text"] for d in documents]
 metadata = [d["metadata"] for d in documents]
 
-print(documents)
 
 
 
