@@ -1,8 +1,8 @@
 import streamlit as st
 
-from email_utils import search_documents,build_context
+from documents_utils import search_documents,build_context
 from llm import ask_llm
-
+import subprocess
 
 ####
 # Configurazione pagina
@@ -30,6 +30,20 @@ st.title("� Document Retrieval assistant")
 st.write(
     "Smart retrieval of your documents"
 )
+
+
+if st.button("Refresh data"):
+    with st.spinner("Ricostruzione indice in corso..."):
+        result = subprocess.run(
+            ["python", "build_index.py"],
+            capture_output=True,
+            text=True
+        )
+    if result.returncode == 0:
+        st.success("Indice rigenerato con successo!")
+    else:
+        st.error(f"Errore durante la generazione:\n{result.stderr}")
+
 
 ####
 # Visualizzazione cronologia

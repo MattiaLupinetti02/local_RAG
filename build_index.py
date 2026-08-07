@@ -5,21 +5,20 @@ import numpy as np
 
 from loader.email_loader import load_emails
 from loader.document_loader import load_pdfs
+from loader.markdown_loader import load_markdown_files
 
 
 from ollama import Client
 
 # Configurazione
 
+DATA_FOLDER = os.getenv("DATA_FOLDER")
+INDEX_FOLDER = os.getenv("INDEX_FOLDER")
 
-DATA_FOLDER = "data"
-INDEX_FOLDER = "faiss"
+INDEX_FILE = os.path.join(INDEX_FOLDER, os.getenv("INDEX_DOCUMENT"))
+METADATA_FILE = os.path.join(INDEX_FOLDER, os.getenv("METADATA_DOCUMENT"))
 
-INDEX_FILE = os.path.join(INDEX_FOLDER, "documents.index")
-METADATA_FILE = os.path.join(INDEX_FOLDER, "metadata.json")
-
-EMBEDDING_MODEL = "bge-m3"
-print(os.getenv("OLLAMA_HOST","http://localhost:11434"))
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL")
 client = Client(
     host=os.getenv(
         "OLLAMA_HOST",
@@ -27,20 +26,16 @@ client = Client(
     )
 )
 
-
-
-
 documents = []
 documents += load_emails(DATA_FOLDER)
 documents += load_pdfs(DATA_FOLDER)
-
+documents += load_markdown_files(DATA_FOLDER)
 texts = [d["text"] for d in documents]
 metadata = [d["metadata"] for d in documents]
 
 
 
 
-# Embedding
 
 print("Calcolo embedding...")
 
@@ -80,10 +75,4 @@ with open(METADATA_FILE, "w", encoding="utf-8") as f:
         indent=4
     )
 
-print()
-
 print("Indice FAISS creato.")
-
-print(INDEX_FILE)
-
-print(METADATA_FILE)

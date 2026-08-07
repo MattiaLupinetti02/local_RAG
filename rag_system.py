@@ -9,21 +9,21 @@ from ollama import Client
 # Configurazione
 ###########################################################
 
-INDEX_FOLDER = "faiss"
+INDEX_FOLDER = os.getenv("INDEX_FOLDER", "faiss")
 
 INDEX_FILE = os.path.join(
     INDEX_FOLDER,
-    "documents.index"
+    os.getenv("INDEX_DOCUMENT", "index.faiss")
 )
 
 METADATA_FILE = os.path.join(
     INDEX_FOLDER,
-    "metadata.json"
+    os.getenv("METADATA_DOCUMENT", "metadata.json")
 )
 
-SIMILARITY_THRESHOLD = 0.45
+SIMILARITY_THRESHOLD = float(os.getenv("SIMILARITY_THRESHOLD", 0.45))
 
-EMBEDDING_MODEL = "bge-m3"
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "bge-m3")
 
 client = Client(
     host=os.getenv(

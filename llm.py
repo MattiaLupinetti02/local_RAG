@@ -3,7 +3,7 @@ import os
 from ollama import Client
 
 
-MODEL = "llama3.2"
+MODEL = os.getenv("MODEL", "llama3.2")
 
 client = Client(
     host=os.getenv(
@@ -14,16 +14,17 @@ client = Client(
 
 
 SYSTEM_PROMPT = """
-Sei un assistente specializzato nella ricerca di email.
+Sei un assistente specializzato nella ricerca di email, file markdown e, pdf.
 
 Riceverai:
 
 - una domanda dell'utente
 
-- alcune email recuperate tramite RAG
+- alcune email, file markdown e, pdf recuperate tramite RAG
 
 Devi rispondere solamente utilizzando
-le informazioni presenti nelle email.
+le informazioni presenti in email, file markdown e, pdf. Tu non puoi inventare informazioni o fare supposizioni. ma devi eseguire 
+sintesi, analisi richieste, comparazioni, estrazioni di informazioni e, ragionamenti logici.
 
 Se il contesto non contiene la risposta,
 dillo chiaramente.
@@ -36,14 +37,18 @@ Quando possibile cita:
 
 - mittente
 
-- data
+- body della mail
+
+- file markdown
+
+- file pdf
 """
 
 
 def ask_llm(question: str, context: str):
 
     prompt = f"""
-        EMAIL RECUPERATE
+        DOCUMENTI RECUPERATI
 
         {context}
 

@@ -6,8 +6,8 @@ from unstructured.partition.pdf import partition_pdf
 from unstructured.chunking.title import chunk_by_title
 
 
-DATA_FOLDER = "data"
-TOP_K = 3
+DATA_FOLDER = os.getenv("DATA_FOLDER", "data")
+TOP_K = int(os.getenv("TOP_K", 3))
 
 
 def read_email(filename):
@@ -93,11 +93,11 @@ def build_context(documents):
     context = ""
     c = ""
     for item in documents:
-        c += """========================================"""
+        c = """========================================"""
 
         for key in item.keys():
 
-            c += f"\n{key.upper()}:{item[key]}\n" 
+            c += f"\n{key}:{item[key]}\n" 
 
         context += c + "\n\n"
 
