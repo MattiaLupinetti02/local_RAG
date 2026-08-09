@@ -93,7 +93,7 @@ def build_context(documents):
     context = ""
     c = ""
     for item in documents:
-        c = """========================================"""
+        c = """---"""
 
         for key in item.keys():
 
