@@ -1,7 +1,9 @@
 import streamlit as st
 
-from documents_utils import search_documents,build_context
+from rag_system import search_embedding_vectors
+from documents_utils import build_context
 from llm import ask_llm
+from rag_system import update_index
 import subprocess
 
 ####
@@ -34,15 +36,11 @@ st.write(
 
 if st.button("Refresh data"):
     with st.spinner("Ricostruzione indice in corso..."):
-        result = subprocess.run(
-            ["python", "build_index.py"],
-            capture_output=True,
-            text=True
-        )
-    if result.returncode == 0:
-        st.success("Indice rigenerato con successo!")
-    else:
-        st.error(f"Errore durante la generazione:\n{result.stderr}")
+        
+        if update_index():
+            st.success("Indice rigenerato con successo!")
+        else:
+            st.error(f"Nessun nuovo documento da indicizzare.")
 
 
 ####
@@ -88,7 +86,7 @@ if query:
 
     with st.spinner("Document research..."):
 
-        documents = search_documents(query)
+        documents = search_embedding_vectors(query)
         context = build_context(documents)
     
     # Nessun risultato

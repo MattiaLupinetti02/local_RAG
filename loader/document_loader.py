@@ -3,7 +3,7 @@ import os
 from unstructured.partition.pdf import partition_pdf
 from unstructured.chunking.title import chunk_by_title
 
-def load_pdfs(folder, max_characters=1000, overlap=150, strategy="fast"):
+def load_pdfs(folder,file_set = None, max_characters=1000, overlap=150, strategy="fast"):
     """
     strategy:
       - "fast": solo estrazione testuale, no layout detection (leggero, veloce)
@@ -12,9 +12,22 @@ def load_pdfs(folder, max_characters=1000, overlap=150, strategy="fast"):
     """
     documents = []
 
-    for filename in sorted(os.listdir(folder)):
-        if not filename.endswith(".pdf"):
-            continue
+
+    files = sorted(
+                [
+                    f for f in os.listdir(folder)
+                    if f.endswith(".pdf")
+                ]
+            )
+
+
+    if file_set is not None:
+        files = [f for f in files if f in file_set]
+        
+
+
+    for filename in files:
+
 
         path = os.path.join(folder, filename)
 

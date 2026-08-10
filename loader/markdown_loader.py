@@ -3,7 +3,7 @@ import os
 import json
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-def load_markdown_files(data_folder):
+def load_markdown_files(data_folder, file_set=None):
     """
     Carica tutti i file in formato Markdown dalla cartella specificata.
     Ogni file viene convertito in un dizionario con testo e metadati.
@@ -18,11 +18,15 @@ def load_markdown_files(data_folder):
     metadata = []
 
     files = sorted(
-        [
-            f for f in os.listdir(data_folder)
-            if f.endswith(".md")
-        ]
-    )
+                [
+                    f for f in os.listdir(data_folder)
+                    if f.endswith(".md")
+                ]
+            )
+
+
+    if file_set is not None:
+        files = [f for f in files if f in file_set]
 
     print(f"Trovati {len(files)} file Markdown.")
 
@@ -37,6 +41,8 @@ def load_markdown_files(data_folder):
         chunks = splitter.split_text(text)
 
         for i, chunk in enumerate(chunks):
+            print(f"Caricato chunk {i+1}/{len(chunks)} dal file {filename}.")
+            print(chunk)
             documents.append({
                 "text": chunk,
                 "metadata": {

@@ -103,7 +103,7 @@ def esporta_email_nylas(data_folder="data", limite=100, sort_by = "date", order=
 
 
 
-def load_emails(data_folder):
+def load_emails(data_folder, file_set=None):
     """
     Carica tutte le email in formato JSON dalla cartella specificata.
     Ogni email viene convertita in un dizionario con testo e metadati.
@@ -114,11 +114,16 @@ def load_emails(data_folder):
     metadata = []
 
     files = sorted(
-        [
-            f for f in os.listdir(data_folder)
-            if f.endswith(".json")
-        ]
-    )
+            [
+                f for f in os.listdir(data_folder)
+                if f.endswith(".json")
+            ]
+        )
+
+
+    if file_set is not None:
+        files = [f for f in files if f in file_set]
+    
 
     print(f"Trovate {len(files)} email.")
 

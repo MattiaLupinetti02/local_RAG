@@ -2,7 +2,8 @@ import os
 import json
 import faiss
 import numpy as np
-
+from documents_utils import make_file_set
+from build_index import update_index_metadata
 from ollama import Client
 
 ###########################################################
@@ -10,6 +11,8 @@ from ollama import Client
 ###########################################################
 
 INDEX_FOLDER = os.getenv("INDEX_FOLDER", "faiss")
+
+TOP_k = int(os.getenv("TOP_K", 3))
 
 INDEX_FILE = os.path.join(
     INDEX_FOLDER,
@@ -20,6 +23,8 @@ METADATA_FILE = os.path.join(
     INDEX_FOLDER,
     os.getenv("METADATA_DOCUMENT", "metadata.json")
 )
+
+DATA = os.getenv("DATA_FOLDER", "data")
 
 SIMILARITY_THRESHOLD = float(os.getenv("SIMILARITY_THRESHOLD", 0.45))
 
@@ -46,6 +51,30 @@ with open(
     metadata = json.load(f)
 
 
+def reload_index_and_metadata():
+    global index, metadata
+    index = faiss.read_index(INDEX_FILE)
+    with open(METADATA_FILE, encoding="utf-8") as f:
+        metadata = json.load(f)
+
+
+
+def update_index():
+    
+
+    file_set = set(os.listdir(DATA))
+    indexed_file_set = make_file_set(metadata)
+    new_files = file_set - indexed_file_set
+    
+    if new_files:
+        print(f"Nuovi file trovati: {new_files}")
+        update_index_metadata(file_set=new_files)
+        reload_index_and_metadata()
+        return True
+    return False
+
+        
+
 ###########################################################
 # Embedding query
 ###########################################################
@@ -71,7 +100,7 @@ def embed_query(query):
 # Ricerca
 ###########################################################
 
-def search_embedding_vectors(query,top_k=3):
+def search_embedding_vectors(query,top_k=TOP_k):
 
     query_embedding = embed_query(query)
 
@@ -94,7 +123,9 @@ def search_embedding_vectors(query,top_k=3):
 
             "score": float(score),
 
-            "file": metadata[idx]["file"]
+            "file": metadata[idx]["file"],
+
+            "text": metadata[idx].get("text", "")
 
         })
 

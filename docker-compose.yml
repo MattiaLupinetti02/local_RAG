@@ -47,10 +47,7 @@ services:
       ollama:
         condition: service_healthy
 
-    #environment:
-      #OLLAMA_HOST: http://ollama:11434
-      #NYLAS_API_KEY: nyk_v0_SJhqkqFfn64uIW4uxVkywsWtYs4VJDQb25DF2YZ1vhEX37noTkZZYzpj6iYYzQMA   # oppure il valore direttamente
-      #NYLAS_GRANT_ID: ccbe7d1b-74b4-406b-b0a9-4f849982c2a1
+
     ports:
       - "8501:8501"
 
