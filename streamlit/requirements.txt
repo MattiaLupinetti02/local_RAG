@@ -10,3 +10,4 @@ unstructured[pdf]
 langchain_text_splitters
 nylas>=6.0.0
 beautifulsoup4>=4.12.0
+sentence_transformers

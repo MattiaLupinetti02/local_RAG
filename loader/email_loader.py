@@ -5,13 +5,12 @@ import json
 import os
 import json
 from nylas import Client
-
-#import os
+from loader.types.chunk import Chunk
 import json
 from nylas import Client
 from bs4 import BeautifulSoup
 
-def esporta_email_nylas(data_folder="data", limite=100, sort_by = "date", order="desc"):
+def esporta_email_nylas(data_folder="data", limite=100, sort_by = "date", order="desc") :
     api_key = os.environ.get("NYLAS_API_KEY")
     grant_id = os.environ.get("NYLAS_GRANT_ID")
     if not api_key or not grant_id:
@@ -57,18 +56,22 @@ def esporta_email_nylas(data_folder="data", limite=100, sort_by = "date", order=
                     soup = BeautifulSoup(body_html, "html.parser")
                     body_clean = soup.get_text(separator=" ", strip=True)
                 except Exception as e:
-                    print(f"⚠️ Errore parsing HTML email {esportati}: {e}")
+                    print(f"Errore parsing HTML email {esportati}: {e}")
                     body_clean = body_html
             else:
                 body_clean = ""
+            """print("=" * 40)
+            print(msg)
+            print("=" * 40)
+            print(str(getattr(msg, "from_", None)))
+            for f in getattr(msg, "from_", []):
+                for k,v in f.items():
+                    print(k,v)"""
 
             email_dict = {
                 "id": msg.id,
                 "subject": getattr(msg, "subject", ""),
-                "from": [
-                    {"name": getattr(f, "name", ""), "email": getattr(f, "email", "")}
-                    for f in (getattr(msg, "from_", None) or [])
-                ],
+                "from": getattr(msg, "from_", None)  ,
                 # ... to/cc/bcc con lo stesso pattern che avevi già
                 "date": str(getattr(msg, "date", "")),
                 "body": body_clean,
@@ -84,7 +87,8 @@ def esporta_email_nylas(data_folder="data", limite=100, sort_by = "date", order=
                     for a in (getattr(msg, "attachments", None) or [])
                 ],
             }
-
+            """print("="*100)
+            print(email_dict)"""
             filename = os.path.join(data_folder, f"email_{esportati}.json")
             with open(filename, "w", encoding="utf-8") as f:
                 json.dump(email_dict, f, indent=2, default=str)
@@ -103,14 +107,14 @@ def esporta_email_nylas(data_folder="data", limite=100, sort_by = "date", order=
 
 
 
-def load_emails(data_folder, file_set=None):
+def load_emails(data_folder, file_set=None) -> list[Chunk]:
     """
     Carica tutte le email in formato JSON dalla cartella specificata.
     Ogni email viene convertita in un dizionario con testo e metadati.
     """
 
     esporta_email_nylas(data_folder = data_folder)
-    documents = []
+    documents: list[Chunk]= []
     metadata = []
 
     files = sorted(
@@ -135,26 +139,12 @@ def load_emails(data_folder, file_set=None):
 
             email = json.load(f)
 
-        text = f"""
-            Oggetto:
-            {email['subject']}
 
-            Mittente:
-            {email['from']}
 
-            Data:
-            {email['date']}
-
-            Corpo:
-            {email['body']}
-            """
-
-        documents.append({
-            "text": text,
-            "metadata": {
-                "file": filename
-            }
-        })
+        documents.append({"file": filename,
+                            "type": "email",
+                            "text": f"{email['body']} \n subject: {email['subject']} \n sender: {email['from']} \n date: {email['date']}"
+                            })
 
 
     print(f"Recuperate {len(documents)} email.")

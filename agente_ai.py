@@ -94,15 +94,13 @@ if query:
 
     if len(context) == 0:
 
-        answer = (
-            "No relevant documents found for the request."
-        )
-
+        context = ""
+    
     else:
         print("Context built, calling LLM...")
 
         with st.spinner("Answering..."):
-
+            context = build_context(documents,score=True)
             answer = ask_llm(
                 question=query,
                 context=context
