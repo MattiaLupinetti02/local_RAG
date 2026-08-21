@@ -41,7 +41,7 @@ All processing happens locally – your data never leaves your machine.
 
 ## Key Features
 
-- **Semantic email search:** Uses the `bge-m3` embedding model via Ollama for high‑quality vector representations.
+- **Semantic document search:** Uses the `bge-m3` embedding model via Ollama for high‑quality vector representations of PDF, markdown files, and emails.
 - **FAISS vector index:** Enables fast and scalable similarity searches over thousands of emails.
 - **Local LLM generation:** Leverages Ollama with the `llama3.2` model to produce contextual, human‑like answers.
 - **Interactive web interface:** Built with Streamlit for a clean and intuitive user experience.
