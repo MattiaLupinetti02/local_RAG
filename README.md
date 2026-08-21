@@ -306,16 +306,8 @@ Key configuration parameters are managed exclusively via the `.env` file:
 - **External services:** `NYLAS_API_KEY` and `NYLAS_GRANT_ID` for real email ingestion.
 - **Processing:** `BATCH_SIZE` controls how many chunks are embedded at once (useful for large document sets).
 
----
 
-## Extending the System
 
-- **Add a new document format:** Implement a new loader in `document_loaders.py` (e.g., for Word `.docx`, HTML, or plain text) and register it in the ingestion pipeline.
-- **Change the embedding or generation model:** Update `EMBEDDING_MODEL` or `MODEL` in `.env` to any model supported by Ollama (e.g., `nomic-embed-text`, `mistral`, `phi3`).
-- **Replace the vector database:** Swap FAISS for ChromaDB, Qdrant, Weaviate, or LanceDB by modifying the `rag_system.py` module.
-- **Add chunking strategies:** Customise the chunk size, overlap, or splitting logic inside `build_index.py`.
-- **Enable hybrid search:** Combine semantic retrieval with keyword‑based search (BM25) for improved recall.
-- **Add user feedback:** Extend the Streamlit app to collect feedback on answers, which can be used to fine‑tune retrieval or generation over time.
 
 ---
 
