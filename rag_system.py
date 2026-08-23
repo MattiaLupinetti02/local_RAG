@@ -33,6 +33,8 @@ SIMILARITY_THRESHOLD = float(os.getenv("SIMILARITY_THRESHOLD", 0.45))
 
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "bge-m3")
 
+RERANKER_SCORE_WEIGHT = float(os.getenv("RERANKER_SCORE_WEIGHT",0.7))
+GAP_CUTOFF = float(os.getenv("GAP_CUTOFF",0.30))
 client = Client(
     host=os.getenv(
         "OLLAMA_HOST",
@@ -102,13 +104,36 @@ def embed_query(query):
 
 
 reranker = CrossEncoder("BAAI/bge-reranker-v2-m3")
+"""
+correggerei il reranker facendo in modo che allo score venga sommato il rerank_score  e poi vengano selezionati i primi top_k
 
-def rerank(query, candidates, top_k=TOP_k_RERANKER):
+"""
+
+def min_max_norm(scores:np.array):
+    min_v = scores.min()
+    max_v = scores.max()
+    return (scores - min_v) / (max_v - min_v) if max_v - min_v > 0  else np.zeros_like(scores)
+
+def rerank(query, candidates, top_k=TOP_k_RERANKER, alpha = RERANKER_SCORE_WEIGHT, cutoff = GAP_CUTOFF):
     pairs = [(query, c["text"]) for c in candidates]
     scores = reranker.predict(pairs)
-    for c, s in zip(candidates, scores):
-        c["rerank_score"] = float(s)
-    return sorted(candidates, key=lambda c: c["rerank_score"], reverse=True)[:top_k]
+    norm_rerank_score = min_max_norm(scores)
+    norm_score  = min_max_norm(np.array([res['score'] for res in candidates]))
+
+    new_scores = (1-alpha)*norm_score + alpha*norm_rerank_score
+    for c, s in zip(candidates, new_scores):
+        c["score"] = float(s)
+    sorted_candidates = sorted(candidates, key=lambda c: c["score"], reverse=True)[:top_k]
+
+    first_candidate = sorted_candidates[0]
+    final_candidate = [first_candidate]
+    i = 0
+    while i < len(sorted_candidates) - 1 and abs(sorted_candidates[i]['score'] - sorted_candidates[i+1]['score']) <= cutoff:
+        final_candidate.append(sorted_candidates[i+1])
+        i+=1
+    print("="*25,"candidati al contesto post cutoff","="*25) 
+    print(final_candidate)
+    return final_candidate
 
 ###########################################################
 # Ricerca
@@ -144,10 +169,10 @@ def search_embedding_vectors(query,top_k=TOP_k_EMBEDDING_MODEL):
             "text": metadata[idx].get("text", "")
 
         })
-    print("=== Risultati della ricerca prima reranking ===")
-    print(results)
+    """print("=== Risultati della ricerca prima reranking ===")
+    print(results)"""
     
-    results = rerank(query, results, top_k=top_k)
-    print("=== Risultati della ricerca dopo reranking ===")
-    print(results)
+    results = rerank(query, results)
+    """print("=== Risultati della ricerca dopo reranking ===")
+    print(results)"""
     return results

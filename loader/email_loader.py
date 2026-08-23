@@ -9,7 +9,7 @@ from loader.types.chunk import Chunk
 import json
 from nylas import Client
 from bs4 import BeautifulSoup
-
+from datetime import datetime
 def esporta_email_nylas(data_folder="data", limite=100, sort_by = "date", order="desc") :
     api_key = os.environ.get("NYLAS_API_KEY")
     grant_id = os.environ.get("NYLAS_GRANT_ID")
@@ -143,7 +143,10 @@ def load_emails(data_folder, file_set=None) -> list[Chunk]:
 
         documents.append({"file": filename,
                             "type": "email",
-                            "text": f"{email['body']} \n subject: {email['subject']} \n sender: {email['from']} \n date: {email['date']}"
+                            "text": f"""body:{email['body']} \n 
+                                        subject: {email['subject']} \n
+                                        sender: {email['from']} \n 
+                                        date: timestamp:{email['date']} - dateformat:{datetime.fromtimestamp(int(email['date'])).strftime('%Y-%m-%d %H:%M:%S')}"""
                             })
 
 

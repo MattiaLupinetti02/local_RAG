@@ -28,7 +28,7 @@ METADATA_FILE = os.path.join(
 )
 
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL")
-
+HUGGING_FACE_TOKEN = os.getenv("HUGGING_FACE_TOKEN","")
 BATCH_SIZE = int(os.getenv("EMBEDDING_BATCH_SIZE", "32"))
 
 client = Client(
