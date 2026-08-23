@@ -131,8 +131,7 @@ def rerank(query, candidates, top_k=TOP_k_RERANKER, alpha = RERANKER_SCORE_WEIGH
     while i < len(sorted_candidates) - 1 and abs(sorted_candidates[i]['score'] - sorted_candidates[i+1]['score']) <= cutoff:
         final_candidate.append(sorted_candidates[i+1])
         i+=1
-    print("="*25,"candidati al contesto post cutoff","="*25) 
-    print(final_candidate)
+
     return final_candidate
 
 ###########################################################
